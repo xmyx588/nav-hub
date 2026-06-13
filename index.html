@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nav Hub · 导航站</title>
+  <style>
+    /* ========== CSS Variables ========== */
+    :root {
+      --bg: #f5f5f0;
+      --surface: #ffffff;
+      --surface2: #f0efea;
+      --border: rgba(0,0,0,0.10);
+      --border-hover: rgba(0,0,0,0.22);
+      --text: #1a1a18;
+      --text2: #5a5a55;
+      --text3: #888780;
+      --accent: #534AB7;
+      --accent-bg: #EEEDFE;
+      --accent-text: #3C3489;
+      --tag-bg: #EEEDFE;
+      --tag-text: #534AB7;
+      --search-bg: #fff;
+      --modal-overlay: rgba(0,0,0,0.40);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: 0.18s ease;
+    }
+    [data-theme="dark"] {
+      --bg: #16161a;
+      --surface: #1e1e24;
+      --surface2: #26262e;
+      --border: rgba(255,255,255,0.10);
+      --border-hover: rgba(255,255,255,0.22);
+      --text: #e8e8e2;
+      --text2: #a8a8a0;
+      --text3: #666660;
+      --accent: #AFA9EC;
+      --accent-bg: #26215C;
+      --accent-text: #CECBF6;
+      --tag-bg: #26215C;
+      --tag-text: #AFA9EC;
+      --search-bg: #1e1e24;
+      --modal-overlay: rgba(0,0,0,0.65);
+    }
+
+    /* ========== Reset & Base ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    img { display: block; }
+
+    /* ========== Header ========== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--accent-bg);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 16px; height: 16px; fill: var(--accent); }
+
+    /* Search bar */
+    .search-wrap {
+      flex: 1;
+      max-width: 420px;
+      position: relative;
+    }
+    .search-wrap input {
+      width: 100%;
+      height: 38px;
+      padding: 0 38px 0 14px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .search-wrap input::placeholder { color: var(--text3); }
+    .search-wrap input:focus {
+      border-color: var(--accent);
+      background: var(--search-bg);
+    }
+    .search-icon {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      color: var(--text3); pointer-events: none;
+    }
+    .search-icon svg { width: 16px; height: 16px; }
+
+    /* Theme toggle */
+    .theme-btn {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      border: 0.5px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--transition), border-color var(--transition);
+      flex-shrink: 0;
+    }
+    .theme-btn:hover { border-color: var(--border-hover); background: var(--bg); }
+    .theme-btn svg { width: 17px; height: 17px; stroke: var(--text2); fill: none; stroke-width: 1.6; }
+
+    /* ========== Category tabs ========== */
+    .category-bar {
+      padding: 16px 24px 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cat-btn {
+      height: 30px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: 0.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text2);
+      transition: all var(--transition);
+    }
+    .cat-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .cat-btn.active {
+      background: var(--accent-bg);
+      border-color: transparent;
+      color: var(--accent-text);
+      font-weight: 500;
+    }
+
+    /* ========== Section title ========== */
+    .section-group { padding: 24px 24px 0; }
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 0.5px;
+      background: var(--border);
+    }
+
+    /* ========== Card grid ========== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    /* ========== Site card ========== */
+    .card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition), transform 0.12s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      user-select: none;
+    }
+    .card:hover {
+      border-color: var(--border-hover);
+      background: var(--surface);
+      transform: translateY(-2px);
+    }
+    .card:active { transform: translateY(0); }
+
+    .card-header { display: flex; align-items: center; gap: 10px; }
+    .card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      border: 0.5px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .card-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .card-icon .favicon { width: 24px; height: 24px; object-fit: contain; }
+
+    .card-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-url {
+      font-size: 11px;
+      color: var(--text3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 5px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      align-self: flex-start;
+    }
+    .card-visit-btn {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .card:hover .card-visit-btn { opacity: 1; }
+    .card-visit-btn svg { width: 11px; height: 11px; stroke: var(--text3); fill: none; stroke-width: 1.8; }
+
+    /* No results */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text3);
+      font-size: 13px;
+    }
+
+    /* ========== Modal ========== */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--modal-overlay);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 560px;
+      max-height: 88vh;
+      overflow-y: auto;
+      position: relative;
+      animation: modalIn 0.18s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      background: var(--surface2);
+    }
+    .modal-img-placeholder {
+      width: 100%;
+      height: 220px;
+      background: var(--surface2);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+
+    .modal-body { padding: 20px 22px 24px; }
+    .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .modal-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      border: 0.5px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .modal-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+    .modal-icon .favicon { width: 28px; height: 28px; object-fit: contain; }
+    .modal-name { font-size: 18px; font-weight: 500; color: var(--text); }
+    .modal-url { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .modal-tag { margin-top: 6px; }
+    .modal-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+    .modal-actions { display: flex; gap: 10px; }
+    .btn-primary {
+      flex: 1;
+      height: 38px;
+      border-radius: 9px;
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      font-size: 13px;
+      font-weight: 500;
+      border: 0.5px solid transparent;
+      transition: background var(--transition);
+    }
+    .btn-primary:hover { background: var(--tag-bg); }
+    .btn-secondary {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      border: 0.5px solid var(--border);
+      color: var(--text2);
+      background: var(--surface2);
+      transition: all var(--transition);
+    }
+    .btn-secondary:hover { border-color: var(--border-hover); }
+
+    .modal-close {
+      position: absolute; top: 12px; right: 12px;
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1;
+      transition: background var(--transition);
+    }
+    .modal-close:hover { background: rgba(0,0,0,0.4); }
+    .modal-close svg { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2; }
+
+    /* ========== Footer ========== */
+    footer {
+      margin-top: 48px;
+      padding: 20px 24px;
+      border-top: 0.5px solid var(--border);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ========== Scrollbar ========== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 600px) {
+      header { padding: 0 14px; gap: 10px; }
+      .category-bar, .section-group { padding-left: 14px; padding-right: 14px; }
+      .card-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
+      .logo span { display: none; }
+    }
+
+    /* Highlight search match */
+    mark {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    /* Result count badge */
+    .result-info {
+      padding: 10px 24px 0;
+      font-size: 12px;
+      color: var(--text3);
+      display: none;
+    }
+    .result-info.show { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6h16M4 12h16M4 18h10"/>
+      </svg>
+    </div>
+    <span>Nav Hub</span>
+  </div>
+
+  <div class="search-wrap">
+    <input type="search" id="searchInput" placeholder="搜索网站名称或描述…" autocomplete="off" />
+    <span class="search-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
+  </div>
+
+  <button class="theme-btn" id="themeBtn" title="切换主题">
+    <!-- sun icon shown in dark, moon in light -->
+    <svg id="iconSun" viewBox="0 0 24 24" style="display:none">
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <svg id="iconMoon" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+</header>
+
+<!-- ===== Result info ===== -->
+<div class="result-info" id="resultInfo"></div>
+
+<!-- ===== Category tabs ===== -->
+<div class="category-bar" id="categoryBar">
+  <button class="cat-btn active" data-cat="all">全部</button>
+  <!-- dynamic categories inserted here -->
+</div>
+
+<!-- ===== Main content ===== -->
+<main id="mainContent" style="padding-bottom: 20px;">
+  <!-- sections rendered by JS -->
+</main>
+
+<!-- ===== Footer ===== -->
+<footer>Nav Hub · 静态导航 · 收录优质网站资源</footer>
+
+<!-- ===== Modal ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div id="modalImgWrap"></div>
+    <div class="modal-body">
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon"></div>
+        <div>
+          <div class="modal-name" id="modalName"></div>
+          <div class="modal-url" id="modalUrl"></div>
+          <div class="modal-tag"><span class="card-tag" id="modalTag"></span></div>
+        </div>
+      </div>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-actions">
+        <button class="btn-primary" id="modalVisit">访问网站 ↗</button>
+        <button class="btn-secondary" id="modalCloseBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const SITES = [
+  // 搜索引擎
+  {
+    id: 1, cat: "搜索引擎",
+    name: "Google", url: "https://www.google.com",
+    desc: "全球最大的搜索引擎，提供网页、图片、视频、地图等多种搜索服务，拥有强大的算法与广泛的索引覆盖。",
+    emoji: "🔍",
+    favicon: "https://www.google.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/google/560/220"
+  },
+  {
+    id: 2, cat: "搜索引擎",
+    name: "Bing", url: "https://www.bing.com",
+    desc: "微软旗下搜索引擎，支持 AI 问答、图片搜索和视频搜索，与 ChatGPT 深度集成。",
+    emoji: "🔵",
+    favicon: "https://www.bing.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/bing/560/220"
+  },
+  {
+    id: 3, cat: "搜索引擎",
+    name: "百度", url: "https://www.baidu.com",
+    desc: "中国最大的中文搜索引擎，提供网页、新闻、图片、地图等全面搜索服务，AI 助手文心一言已深度整合。",
+    emoji: "🔶",
+    favicon: "https://www.baidu.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/baidu/560/220"
+  },
+
+  // AI 工具
+  {
+    id: 4, cat: "AI 工具",
+    name: "ChatGPT", url: "https://chat.openai.com",
+    desc: "OpenAI 旗下的 AI 对话助手，支持文本创作、代码编写、数据分析，GPT-4o 多模态能力出众。",
+    emoji: "🤖",
+    favicon: "https://chat.openai.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/chatgpt/560/220"
+  },
+  {
+    id: 5, cat: "AI 工具",
+    name: "Claude", url: "https://claude.ai",
+    desc: "Anthropic 开发的 AI 助手，擅长长文档分析、代码审查与创意写作，上下文窗口大，安全性高。",
+    emoji: "🧠",
+    favicon: "https://claude.ai/favicon.ico",
+    screenshot: "https://picsum.photos/seed/claude/560/220"
+  },
+  {
+    id: 6, cat: "AI 工具",
+    name: "Midjourney", url: "https://www.midjourney.com",
+    desc: "顶级 AI 图像生成平台，通过文字描述生成高质量艺术图像，广受设计师与创作者青睐。",
+    emoji: "🎨",
+    favicon: "https://www.midjourney.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/midjourney/560/220"
+  },
+  {
+    id: 7, cat: "AI 工具",
+    name: "文心一言", url: "https://yiyan.baidu.com",
+    desc: "百度推出的 AI 对话助手，深度整合中文语料，支持文案创作、代码生成和多模态对话。",
+    emoji: "📝",
+    favicon: "https://yiyan.baidu.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/ernie/560/220"
+  },
+
+  // 开发工具
+  {
+    id: 8, cat: "开发工具",
+    name: "GitHub", url: "https://github.com",
+    desc: "全球最大的代码托管平台，支持 Git 版本管理、团队协作、CI/CD 流水线和 Copilot AI 辅助编程。",
+    emoji: "🐙",
+    favicon: "https://github.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/github/560/220"
+  },
+  {
+    id: 9, cat: "开发工具",
+    name: "Stack Overflow", url: "https://stackoverflow.com",
+    desc: "开发者问答社区，涵盖几乎所有编程语言和框架，是全球程序员解决技术问题的首选平台。",
+    emoji: "📚",
+    favicon: "https://stackoverflow.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/stackoverflow/560/220"
+  },
+  {
+    id: 10, cat: "开发工具",
+    name: "MDN Web Docs", url: "https://developer.mozilla.org",
+    desc: "Mozilla 维护的权威 Web 开发文档，提供 HTML、CSS、JavaScript 完整参考手册与教程。",
+    emoji: "📖",
+    favicon: "https://developer.mozilla.org/favicon.ico",
+    screenshot: "https://picsum.photos/seed/mdn/560/220"
+  },
+  {
+    id: 11, cat: "开发工具",
+    name: "CodePen", url: "https://codepen.io",
+    desc: "在线前端代码编辑器与社区，可实时预览 HTML/CSS/JS 效果，是前端开发者展示作品的绝佳平台。",
+    emoji: "✏️",
+    favicon: "https://codepen.io/favicon.ico",
+    screenshot: "https://picsum.photos/seed/codepen/560/220"
+  },
+
+  // 设计资源
+  {
+    id: 12, cat: "设计资源",
+    name: "Figma", url: "https://www.figma.com",
+    desc: "基于云端的协作 UI 设计工具，支持多人实时编辑、原型交互与设计系统管理，是产品团队首选设计平台。",
+    emoji: "🎯",
+    favicon: "https://www.figma.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/figma/560/220"
+  },
+  {
+    id: 13, cat: "设计资源",
+    name: "Dribbble", url: "https://dribbble.com",
+    desc: "设计师作品展示与灵感汇聚平台，收录全球顶尖设计师的 UI/UX、插画、品牌视觉等创作。",
+    emoji: "🏀",
+    favicon: "https://dribbble.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/dribbble/560/220"
+  },
+  {
+    id: 14, cat: "设计资源",
+    name: "Unsplash", url: "https://unsplash.com",
+    desc: "提供海量高清免版权图片的免费图库，摄影作品质量高，适合各类设计与内容创作项目使用。",
+    emoji: "📷",
+    favicon: "https://unsplash.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/unsplash/560/220"
+  },
+
+  // 视频娱乐
+  {
+    id: 15, cat: "视频娱乐",
+    name: "YouTube", url: "https://www.youtube.com",
+    desc: "全球最大视频平台，涵盖教学、娱乐、新闻、音乐等各类内容，支持 4K/HDR 播放与直播。",
+    emoji: "▶️",
+    favicon: "https://www.youtube.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/youtube/560/220"
+  },
+  {
+    id: 16, cat: "视频娱乐",
+    name: "哔哩哔哩", url: "https://www.bilibili.com",
+    desc: "中国最具影响力的视频弹幕平台，集知识学习、动漫、游戏、生活创作于一体，拥有活跃的年轻用户群体。",
+    emoji: "📺",
+    favicon: "https://www.bilibili.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/bilibili/560/220"
+  },
+
+  // 新闻资讯
+  {
+    id: 17, cat: "新闻资讯",
+    name: "少数派", url: "https://sspai.com",
+    desc: "专注 Apple 平台和效率工具的数字生活媒体，汇聚优质软件评测、工作流分享与技术深度文章。",
+    emoji: "📰",
+    favicon: "https://sspai.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/sspai/560/220"
+  },
+  {
+    id: 18, cat: "新闻资讯",
+    name: "Hacker News", url: "https://news.ycombinator.com",
+    desc: "Y Combinator 运营的科技社区，聚焦创业、技术与科学话题，内容质量极高，讨论深度出众。",
+    emoji: "🗞️",
+    favicon: "https://news.ycombinator.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/hackernews/560/220"
+  },
+
+  // 云服务
+  {
+    id: 19, cat: "云服务",
+    name: "Vercel", url: "https://vercel.com",
+    desc: "面向前端开发者的云部署平台，支持 Next.js 等框架一键部署，提供全球 CDN 与无服务器函数。",
+    emoji: "▲",
+    favicon: "https://vercel.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/vercel/560/220"
+  },
+  {
+    id: 20, cat: "云服务",
+    name: "腾讯云", url: "https://cloud.tencent.com",
+    desc: "腾讯旗下综合云计算平台，提供服务器、数据库、CDN、AI 等全栈云服务，在中国市场覆盖广泛。",
+    emoji: "☁️",
+    favicon: "https://cloud.tencent.com/favicon.ico",
+    screenshot: "https://picsum.photos/seed/tencentcloud/560/220"
+  },
+
+  // 学习平台
+  {
+    id: 21, cat: "学习平台",
+    name: "Coursera", url: "https://www.coursera.org",
+    desc: "与全球顶尖大学合作的在线学习平台，提供编程、数据科学、商业等专业课程与认证证书。",
+    emoji: "🎓",
+    favicon: "https://www.coursera.org/favicon.ico",
+    screenshot: "https://picsum.photos/seed/coursera/560/220"
+  },
+  {
+    id: 22, cat: "学习平台",
+    name: "掘金", url: "https://juejin.cn",
+    desc: "面向中国开发者的技术社区，聚焦前端、后端、移动开发等领域，内容丰富，社区活跃。",
+    emoji: "💎",
+    favicon: "https://juejin.cn/favicon.ico",
+    screenshot: "https://picsum.photos/seed/juejin/560/220"
+  },
+];
+
+// ===== STATE =====
+let currentCat = "all";
+let searchQuery = "";
+
+// ===== THEME =====
+const html = document.documentElement;
+const themeBtn = document.getElementById("themeBtn");
+const iconSun = document.getElementById("iconSun");
+const iconMoon = document.getElementById("iconMoon");
+
+function updateThemeIcon() {
+  const dark = html.dataset.theme === "dark";
+  iconSun.style.display = dark ? "block" : "none";
+  iconMoon.style.display = dark ? "none" : "block";
+}
+
+// Load saved theme
+const saved = localStorage.getItem("nav-theme");
+if (saved) { html.dataset.theme = saved; }
+updateThemeIcon();
+
+themeBtn.addEventListener("click", () => {
+  const next = html.dataset.theme === "dark" ? "light" : "dark";
+  html.dataset.theme = next;
+  localStorage.setItem("nav-theme", next);
+  updateThemeIcon();
+});
+
+// ===== CATEGORIES =====
+const cats = ["全部", ...new Set(SITES.map(s => s.cat))];
+const catBar = document.getElementById("categoryBar");
+
+// clear and rebuild
+catBar.innerHTML = "";
+cats.forEach(cat => {
+  const btn = document.createElement("button");
+  btn.className = "cat-btn" + (cat === "全部" ? " active" : "");
+  btn.dataset.cat = cat === "全部" ? "all" : cat;
+  btn.textContent = cat;
+  btn.addEventListener("click", () => {
+    currentCat = btn.dataset.cat;
+    document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    render();
+  });
+  catBar.appendChild(btn);
+});
+
+// ===== SEARCH =====
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("input", () => {
+  searchQuery = searchInput.value.trim().toLowerCase();
+  render();
+});
+
+// ===== RENDER =====
+function highlight(text, query) {
+  if (!query) return text;
+  const esc = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.replace(new RegExp(`(${esc})`, "gi"), "<mark>$1</mark>");
+}
+
+function renderIcon(site) {
+  if (site.favicon) {
+    return `<img class="favicon" src="${site.favicon}" alt="" onerror="this.parentNode.textContent='${site.emoji}'" />`;
+  }
+  return site.emoji;
+}
+
+function render() {
+  const main = document.getElementById("mainContent");
+  const resultInfo = document.getElementById("resultInfo");
+  const query = searchQuery;
+  const cat = currentCat;
+
+  // Filter
+  let filtered = SITES.filter(site => {
+    const matchCat = cat === "all" || site.cat === cat;
+    const matchQ = !query ||
+      site.name.toLowerCase().includes(query) ||
+      site.desc.toLowerCase().includes(query) ||
+      site.cat.toLowerCase().includes(query) ||
+      site.url.toLowerCase().includes(query);
+    return matchCat && matchQ;
+  });
+
+  // Result info
+  if (query) {
+    resultInfo.textContent = `搜索"${searchQuery}"，找到 ${filtered.length} 个结果`;
+    resultInfo.classList.add("show");
+  } else {
+    resultInfo.classList.remove("show");
+  }
+
+  // Group by category (or flat if searching)
+  main.innerHTML = "";
+
+  if (filtered.length === 0) {
+    const sec = document.createElement("div");
+    sec.className = "section-group";
+    sec.innerHTML = `<div class="card-grid"><div class="empty-state">没有找到匹配的网站</div></div>`;
+    main.appendChild(sec);
+    return;
+  }
+
+  if (query || cat !== "all") {
+    // Flat list
+    const sec = document.createElement("div");
+    sec.className = "section-group";
+    const grid = document.createElement("div");
+    grid.className = "card-grid";
+    filtered.forEach(site => grid.appendChild(buildCard(site, query)));
+    sec.appendChild(grid);
+    main.appendChild(sec);
+  } else {
+    // Group by cat
+    const groups = {};
+    SITES.forEach(site => {
+      if (!groups[site.cat]) groups[site.cat] = [];
+      groups[site.cat].push(site);
+    });
+    Object.entries(groups).forEach(([catName, sites]) => {
+      const sec = document.createElement("div");
+      sec.className = "section-group";
+      sec.innerHTML = `<div class="section-title">${catName}</div>`;
+      const grid = document.createElement("div");
+      grid.className = "card-grid";
+      sites.forEach(site => grid.appendChild(buildCard(site, "")));
+      sec.appendChild(grid);
+      main.appendChild(sec);
+    });
+  }
+}
+
+function buildCard(site, query) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const nameHl = highlight(site.name, query);
+  const descHl = highlight(site.desc, query);
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-icon">${renderIcon(site)}</div>
+      <div style="min-width:0">
+        <div class="card-name">${nameHl}</div>
+        <div class="card-url">${site.url.replace(/^https?:\/\//, "")}</div>
+      </div>
+    </div>
+    <div class="card-desc">${descHl}</div>
+    <span class="card-tag">${site.cat}</span>
+    <button class="card-visit-btn" title="直接访问" onclick="event.stopPropagation();window.open('${site.url}','_blank')">
+      <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+    </button>
+  `;
+  card.addEventListener("click", () => openModal(site));
+  return card;
+}
+
+// ===== MODAL =====
+const modalOverlay = document.getElementById("modalOverlay");
+const modalClose = document.getElementById("modalClose");
+const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+function openModal(site) {
+  document.getElementById("modalImgWrap").innerHTML = site.screenshot
+    ? `<img class="modal-img" src="${site.screenshot}" alt="${site.name} 截图" loading="lazy" onerror="this.parentNode.innerHTML='<div class=modal-img-placeholder>${site.emoji}</div>'" />`
+    : `<div class="modal-img-placeholder">${site.emoji}</div>`;
+
+  document.getElementById("modalIcon").innerHTML = renderIcon(site);
+  document.getElementById("modalName").textContent = site.name;
+  document.getElementById("modalUrl").textContent = site.url;
+  document.getElementById("modalTag").textContent = site.cat;
+  document.getElementById("modalDesc").textContent = site.desc;
+  document.getElementById("modalVisit").onclick = () => window.open(site.url, "_blank");
+
+  modalOverlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  modalOverlay.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+modalClose.addEventListener("click", closeModal);
+modalCloseBtn.addEventListener("click", closeModal);
+modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+// ===== INIT =====
+render();
+</script>
+</body>
+</html>
